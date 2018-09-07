@@ -1,8 +1,10 @@
 package com.whut.ein3614.coolweather.util;
 
+import com.google.gson.Gson;
 import com.whut.ein3614.coolweather.db.City;
 import com.whut.ein3614.coolweather.db.County;
 import com.whut.ein3614.coolweather.db.Province;
+import com.whut.ein3614.coolweather.gson.Weather;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -73,5 +75,19 @@ public class Utility {
             e.printStackTrace();
         }
         return false;
+    }
+    /**
+     * 解析JSON数据为Weather
+     * */
+    public static Weather handleWeatherResponse(String response){
+        try {
+            JSONObject object = new JSONObject(response);
+            JSONArray array = object.getJSONArray("HeWeather");
+            String weatherContent = array.get(0).toString();
+            return new Gson().fromJson(weatherContent,Weather.class);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }
