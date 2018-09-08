@@ -81,12 +81,20 @@ public class ChooseAreaFragment extends Fragment {
                 } else if (currentLevel == LEVEL_CITY) {
                     selectedCity = cityList.get(position);
                     queryCounties();
-                } else if (currentLevel == LEVEL_COUNTY){
+                } else if (currentLevel == LEVEL_COUNTY) {
                     String weatherId = countyList.get(position).getWeatherId();
-                    Intent intent = new Intent(getContext(),WeatherActivity.class);
-                    intent.putExtra("weather_id",weatherId);
-                    startActivity(intent);
-                    getActivity().finish();
+                    if (getActivity() instanceof MainActivity){
+                        Intent intent = new Intent(getContext(), WeatherActivity.class);
+                        intent.putExtra("weather_id", weatherId);
+                        startActivity(intent);
+                        getActivity().finish();
+                    } else if (getActivity() instanceof WeatherActivity){
+                        WeatherActivity weatherActivity = (WeatherActivity) getActivity();
+                        weatherActivity.drawerLayout.closeDrawers();
+                        weatherActivity.swipeRefresh.setRefreshing(true);
+                        weatherActivity.requestWeather(weatherId);
+                        weatherActivity.weatherId = weatherId;
+                    }
                 }
             }
         });
@@ -127,7 +135,7 @@ public class ChooseAreaFragment extends Fragment {
         tvTitle.setText(selectedProvince.getProvinceName());
         btnBack.setVisibility(View.VISIBLE);
         //条件查询数据库中所有市
-        cityList = LitePal.where("provinceid = ?",String.valueOf(selectedProvince.getId())).find(City.class);
+        cityList = LitePal.where("provinceid = ?", String.valueOf(selectedProvince.getId())).find(City.class);
         if (cityList.size() > 0) {
             dataList.clear();
             for (City city : cityList) {
@@ -138,8 +146,8 @@ public class ChooseAreaFragment extends Fragment {
             currentLevel = LEVEL_CITY;
         } else {//如果数据库没有数据，那么就要请求网络
             int provinceCode = selectedProvince.getProvinceCode();
-            String address = "http://guolin.tech/api/china"+"/"+provinceCode;
-            queryFromServer(address,"city");
+            String address = "http://guolin.tech/api/china" + "/" + provinceCode;
+            queryFromServer(address, "city");
         }
     }
 
@@ -147,7 +155,7 @@ public class ChooseAreaFragment extends Fragment {
         tvTitle.setText(selectedCity.getCityName());
         btnBack.setVisibility(View.VISIBLE);
         //条件查询数据库中所有县
-        countyList = LitePal.where("cityid = ?",String.valueOf(selectedCity.getId())).find(County.class);
+        countyList = LitePal.where("cityid = ?", String.valueOf(selectedCity.getId())).find(County.class);
         if (countyList.size() > 0) {
             dataList.clear();
             for (County county : countyList) {
@@ -159,8 +167,8 @@ public class ChooseAreaFragment extends Fragment {
         } else {//如果数据库没有数据，那么就要请求网络
             int provinceCode = selectedProvince.getProvinceCode();
             int cityCode = selectedCity.getCityCode();
-            String address = "http://guolin.tech/api/china"+"/"+provinceCode+"/"+cityCode;
-            queryFromServer(address,"county");
+            String address = "http://guolin.tech/api/china" + "/" + provinceCode + "/" + cityCode;
+            queryFromServer(address, "county");
         }
     }
 
